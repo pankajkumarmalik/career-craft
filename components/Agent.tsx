@@ -7,6 +7,8 @@ import React, { useEffect, useState } from "react";
 import { vapi } from "@/lib/vapi.sdk";
 import { interviewer } from "@/constants";
 import { createFeedback } from "@/lib/actions/general.action";
+import { toast } from "sonner";
+import FeedbackLoadingDialog from "./FeedbackLoadingDialog";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -31,6 +33,7 @@ const Agent = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   useEffect(() => {
     const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
@@ -70,22 +73,27 @@ const Agent = ({
     const handleGenerateFeedback = async (messages: SavedMessage[]) => {
       console.log("Generate feedback here.");
 
+      setFeedbackLoading(true);
       const { success, feedbackId: id } = await createFeedback({
         interviewId: interviewId!,
         userId: userId!,
         transcript: messages,
       });
+      setFeedbackLoading(false);
 
       if (success && id) {
+        toast.success("Feedback is genrated!");
         router.push(`/interview/${interviewId}/feedback`);
       } else {
         console.log("Error saving feedback");
+        toast.error("Something went wrong, Please retake the interview.");
         router.push("/");
       }
     };
 
     if (callStatus === CallStatus.FINISHED) {
       if (type === "generate") {
+        toast.success("Your interview is ready! You can start now.");
         router.push("/");
       } else {
         handleGenerateFeedback(messages);
@@ -132,6 +140,7 @@ const Agent = ({
 
   return (
     <>
+      <FeedbackLoadingDialog open={feedbackLoading} />
       <div className="call-view">
         <div className="card-interviewer">
           <div className="avatar">
