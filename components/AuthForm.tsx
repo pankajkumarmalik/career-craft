@@ -17,6 +17,8 @@ import {
 } from "firebase/auth";
 import { auth } from "@/firebase/client";
 import { signIn, signUp } from "@/lib/actions/auth.action";
+import { useState } from "react";
+import { Loader } from "lucide-react";
 
 const authFormSchema = (type: FormType) => {
   return z.object({
@@ -29,6 +31,7 @@ const authFormSchema = (type: FormType) => {
 const AuthForm = ({ type }: { type: FormType }) => {
   const router = useRouter();
   const formSchema = authFormSchema(type);
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,6 +43,8 @@ const AuthForm = ({ type }: { type: FormType }) => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsLoading(true);
+
     try {
       if (type === "sign-up") {
         const { name, email, password } = values;
@@ -88,6 +93,8 @@ const AuthForm = ({ type }: { type: FormType }) => {
     } catch (error) {
       console.log(error);
       toast.error("Invalid email or password");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -131,8 +138,17 @@ const AuthForm = ({ type }: { type: FormType }) => {
               type="password"
             />
 
-            <Button className="btn" type="submit">
-              {isSignIn ? "Sign in" : "Create an Account"}
+            <Button className="btn" type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader className="h-6 w-6 animate-spin text-black" />
+                  {isSignIn ? "Signing in..." : "Creating..."}
+                </>
+              ) : isSignIn ? (
+                "Sign in"
+              ) : (
+                "Create an Account"
+              )}
             </Button>
           </form>
         </Form>

@@ -5,6 +5,7 @@ import {
   getInterviewsByUserId,
   getLatestInterviews,
 } from "@/lib/actions/general.action";
+
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -28,7 +29,7 @@ const page = async () => {
           </p>
 
           <Button asChild className="btn-primary max-sm:w-full">
-            <Link href="/interview">Start an Interview</Link>
+            <Link href="/interview">Generate Personalized Interview</Link>
           </Button>
         </div>
 
@@ -56,7 +57,7 @@ const page = async () => {
       </section>
 
       <section className="flex flex-col gap-6 mt-8">
-        <h2>Take an Interview</h2>
+        <h2>Explore Interviews</h2>
 
         <div className="interviews-section">
           {hasUpcomingInterviews ? (

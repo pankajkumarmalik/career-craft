@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import DisplayTechIcons from "./DisplayTechIcons";
 import { getFeedbackByInterviewId } from "@/lib/actions/general.action";
+import { getCurrentUser } from "@/lib/actions/auth.action";
 
 const InterviewCard = async ({
   id,
@@ -22,6 +23,8 @@ const InterviewCard = async ({
   const formatedDate = dayjs(
     feedback?.createdAt || createdAt || Date.now()
   ).format("MMM D, YYYY");
+
+  const currentUser = await getCurrentUser();
 
   return (
     <div className="card-border w-[360px] max-sm:w-full min-h-96">
@@ -70,9 +73,15 @@ const InterviewCard = async ({
 
           <Button className="btn-primary">
             <Link
-              href={feedback ? `/interview/${id}/feedback` : `/interview/${id}`}
+              href={
+                feedback && userId === currentUser?.id
+                  ? `/interview/${id}/feedback`
+                  : `/interview/${id}`
+              }
             >
-              {feedback ? "Check Feedback" : "Start Interview"}
+              {feedback && userId === currentUser?.id
+                ? "Check Feedback"
+                : "Start Interview"}
             </Link>
           </Button>
         </div>

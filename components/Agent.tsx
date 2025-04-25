@@ -9,6 +9,7 @@ import { interviewer } from "@/constants";
 import { createFeedback } from "@/lib/actions/general.action";
 import { toast } from "sonner";
 import FeedbackLoadingDialog from "./FeedbackLoadingDialog";
+import InterviewGeneratedDialog from "./InterviewGeneratedDialog";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -34,6 +35,7 @@ const Agent = ({
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [generatedInterview, setGeneratedInterview] = useState(false);
 
   useEffect(() => {
     const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
@@ -94,7 +96,8 @@ const Agent = ({
     if (callStatus === CallStatus.FINISHED) {
       if (type === "generate") {
         toast.success("Your interview is ready! You can start now.");
-        router.push("/");
+        //router.push("/");
+        setGeneratedInterview(true);
       } else {
         handleGenerateFeedback(messages);
       }
@@ -141,6 +144,13 @@ const Agent = ({
   return (
     <>
       <FeedbackLoadingDialog open={feedbackLoading} />
+      <InterviewGeneratedDialog
+        open={generatedInterview}
+        onClose={() => {
+          setGeneratedInterview(false);
+          router.push("/"); // ✅ Navigate only after OK is clicked
+        }}
+      />
       <div className="call-view">
         <div className="card-interviewer">
           <div className="avatar">
@@ -187,16 +197,25 @@ const Agent = ({
       )}
 
       <div className="w-full flex justify-center">
-        {callStatus !== "ACTIVE" ? (
-          <button className="relative btn-call" onClick={handleCall}>
+        {callStatus !== CallStatus.ACTIVE ? (
+          <button
+            className="relative btn-call"
+            onClick={handleCall}
+            disabled={callStatus === CallStatus.CONNECTING}
+          >
             <span
               className={cn(
                 "absolute animate-ping rounded-full opacity-75",
-                callStatus !== "CONNECTING" && "hidden"
+                callStatus !== CallStatus.CONNECTING && "hidden"
               )}
             />
-
-            <span>{isCallInactiveOrFinished ? "Call" : "..."}</span>
+            <span>
+              {callStatus === CallStatus.CONNECTING
+                ? "Connecting..."
+                : isCallInactiveOrFinished
+                ? "Call"
+                : ""}
+            </span>
           </button>
         ) : (
           <button className="btn-disconnect" onClick={handleDisconnect}>
